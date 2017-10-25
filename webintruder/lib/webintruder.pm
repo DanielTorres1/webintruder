@@ -55,6 +55,7 @@ sub request
 
 my @sqlerrors = ( 'error in your SQL syntax',
  'mysql_fetch',
+ 'sqlsrv_fetch_object',
  "Unclosed quotation mark after the character",
  'num_rows',
  "syntax error at or near",
