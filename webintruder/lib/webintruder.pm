@@ -88,14 +88,15 @@ my @sqlerrors = ( 'error in your SQL syntax',
 
   if ($method eq "GET")
 	{
-	my $final_url ;
+	   my $final_url ;
 	
-	if ($request_parameters ne "")
-		{$final_url = $url."?$request_parameters";}
-	else
-		{$final_url = $url}
+	   if ($request_parameters ne "")
+    	  {$final_url = $url."?$request_parameters";}
+	   else
+		  {$final_url = $url}
 		
-	$response = $self->dispatch(url =>$final_url, method => 'GET',headers => $headers);}
+	  $response = $self->dispatch(url =>$final_url, method => 'GET',headers => $headers);
+	}
   else
 	{$response = $self->dispatch(url =>$url, method => 'POST',post_data =>$request_parameters,headers => $headers);}	
 	
@@ -140,6 +141,7 @@ my @sqlerrors = ( 'error in your SQL syntax',
 	open (SALIDA,">>$section-$test.csv") || die "ERROR: No puedo abrir el fichero $test.csv\n";
 	print SALIDA "$req_id;$url;$method;$value;$original_status;$status;$match_status;$error_response;$responselength\n";
 	close (SALIDA);	
+	
 	
 	
 	open (SALIDA,">.log/$section/$test/$req_id.html") || die "ERROR: No puedo abrir el fichero $test-log/$req_id.html \n";
