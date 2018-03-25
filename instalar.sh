@@ -30,4 +30,4 @@ sudo chmod a+x /usr/bin/cpanm
 sudo chmod a+x /usr/bin/webintruder.pl
 
 cd webintruder/ 
-sudo cpanm .
+sudo cpan .
