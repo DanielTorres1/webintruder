@@ -8,22 +8,35 @@ use MIME::Base64 qw( decode_base64 );
 use webintruder;
 no warnings;
 
+my $banner = <<EOF;
+                                                        
+ __        __   _       ___       _                  _           
+ \ \      / /__| |__   |_ _|_ __ | |_ _ __ _   _  __| | ___ _ __ 
+  \ \ /\ / / _ \ '_ \   | || '_ \| __| '__| | | |/ _` |/ _ \ '__|
+   \ V  V /  __/ |_) |  | || | | | |_| |  | |_| | (_| |  __/ |   
+    \_/\_/ \___|_.__/  |___|_| |_|\__|_|   \__,_|\__,_|\___|_|                                                                                                                             
+
+Autor: Daniel Torres Sandi
+EOF
+
+
 
 $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0; 
 my $t = localtime;
 my $today = sprintf("%04d-%02d-%02d",$t->year + 1900, $t->mon + 1, $t->mday);
 
 my $debug =0; 
-  
+
+print $banner;  
 sub usage
 {
-  printf "Usage :\n";  
-  printf "webintruder.pl -f file.xml -t {session/sqli/error} -s seccion  -c cookie \n\n";
-  printf "webintruder.pl -f file.xml -t session -s login  -c \"PHPSESSION=hfs77fhsuf7\" \n";
-  printf "webintruder.pl -f file.xml -t session -s login  -c \"PHPSESSION=0\" \n";
-  printf "webintruder.pl -f file.xml -t session -s login  -c nocookie \n";
-  printf "webintruder.pl -f file.xml -t sqli -s login  \n";
-  printf "webintruder.pl -f file.xml -t error -s login  \n";
+  printf "Uso :\n";  
+  printf "webintruder.pl -f file.xml -t {session/sqli/error}  -c cookie \n\n";
+  printf "webintruder.pl -f file.xml -t session -c \"PHPSESSION=hfs77fhsuf7\" \n";
+  printf "webintruder.pl -f file.xml -t session -c \"PHPSESSION=0\" \n";
+  printf "webintruder.pl -f file.xml -t session -c nocookie \n";
+  printf "webintruder.pl -f file.xml -t sqli \n";
+  printf "webintruder.pl -f file.xml -t error \n";
   
   exit(1);
 }
@@ -32,7 +45,10 @@ getopts('f:t:s:c:h:', \%opts);
 
 my $file = $opts{'f'} if $opts{'f'};
 my $test = $opts{'t'} if $opts{'t'};
-my $section = $opts{'s'} if $opts{'s'};
+
+my @file_array = split(".",$file);
+my $section=@file_array[0];
+
 my $cookie = $opts{'c'} if $opts{'c'};
 
 # Print help message if required

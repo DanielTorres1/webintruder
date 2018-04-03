@@ -8,7 +8,13 @@ RESET='\e[0m'
 function print_ascii_art {
 cat << "EOF"
                                                      					
-					https://github.com/DanielTorres1
+ __        __   _       ___       _                  _           
+ \ \      / /__| |__   |_ _|_ __ | |_ _ __ _   _  __| | ___ _ __ 
+  \ \ /\ / / _ \ '_ \   | || '_ \| __| '__| | | |/ _` |/ _ \ '__|
+   \ V  V /  __/ |_) |  | || | | | |_| |  | |_| | (_| |  __/ |   
+    \_/\_/ \___|_.__/  |___|_| |_|\__|_|   \__,_|\__,_|\___|_|                                                                    
+
+				https://github.com/DanielTorres1
 
 EOF
 }
@@ -20,13 +26,11 @@ echo -e "$OKBLUE [+] Instalando WEB Intruder $RESET"
 
 echo -e "$OKGREEN [+] Instalando librerias perl necesarias $RESET" 
 
-sudo cp cpanm /usr/bin 
 sudo cp webintruder.pl /usr/bin/
 
 mkdir /usr/share/webintruder 2>/dev/null
 sudo cp -R payloads /usr/share/webintruder
 
-sudo chmod a+x /usr/bin/cpanm
 sudo chmod a+x /usr/bin/webintruder.pl
 
 cd webintruder/ 
