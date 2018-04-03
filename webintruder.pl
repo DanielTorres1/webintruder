@@ -10,11 +10,7 @@ no warnings;
 
 my $banner = <<EOF;
                                                         
- __        __   _       ___       _                  _           
- \ \      / /__| |__   |_ _|_ __ | |_ _ __ _   _  __| | ___ _ __ 
-  \ \ /\ / / _ \ '_ \   | || '_ \| __| '__| | | |/ _` |/ _ \ '__|
-   \ V  V /  __/ |_) |  | || | | | |_| |  | |_| | (_| |  __/ |   
-    \_/\_/ \___|_.__/  |___|_| |_|\__|_|   \__,_|\__,_|\___|_|                                                                                                                             
+WEB INTRUDER                                                                                                                      
 
 Autor: Daniel Torres Sandi
 EOF
@@ -41,15 +37,16 @@ sub usage
   exit(1);
 }
 
-getopts('f:t:s:c:h:', \%opts);
+getopts('f:t:c:h:', \%opts);
 
 my $file = $opts{'f'} if $opts{'f'};
 my $test = $opts{'t'} if $opts{'t'};
+my $cookie = $opts{'c'} if $opts{'c'};
 
 my @file_array = split(".",$file);
 my $section=@file_array[0];
 
-my $cookie = $opts{'c'} if $opts{'c'};
+
 
 # Print help message if required
 if ($opts{'h'} || !(%opts)) {
@@ -62,7 +59,7 @@ system("mkdir -p .log/$section/$test 2>/dev/null ");
 if ($test eq "session")
 	{$title = "COOKIE";}
 else	
-	{$title = "PARAMETERS";}
+	{$title = "PARAMETROS";}
 
 open (SALIDA,">$section-$test.csv") || die "ERROR: No puedo abrir el fichero $test.csv\n";
 print SALIDA "ID;URL;METHOD;$title;ORIGINAL STATUS;CURRENT STATUS;STATUS MATCH;ERROR IN RESPONSE;RESPONSE LENGHT\n";

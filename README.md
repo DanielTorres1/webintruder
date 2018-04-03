@@ -1,7 +1,7 @@
 
-# WebIntruder
+# Web Intruder
 
-WebIntruder tiene funcionalidad similar del módulo **Intruder** de BurpSuite.  Automatiza ataques personalizados contra aplicaciones web.  Por el momento tiene 3 funcionalidades agregadas:
+Web Intruder tiene funcionalidad similar del módulo **Intruder** de BurpSuite.  Automatiza ataques personalizados contra aplicaciones web.  Por el momento tiene 3 funcionalidades agregadas:
 
 - Busca generar algun tipo de error en la aplicación usando cada uno de los parametros GET/POST
 - Realiza pruebas SQLi en cada uno de los parametros GET/POST
