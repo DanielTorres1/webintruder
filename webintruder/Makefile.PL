@@ -27,10 +27,11 @@ WriteMakefile(
         'HTTP::Cookies' => 0,
         'HTTP::Request' => 0,
         'HTTP::Response' => 0,
-        'Getopt::Std' => 0,
-        'Parallel::ForkManager' => 0,        
+        'Getopt::Std' => 0,         
         'Term::ANSIColor' => 0, 
         'MIME::Base64 ' =>0,
+        'JSON' =>0,
+        
     },
     dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'webintruder-*' },
