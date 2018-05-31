@@ -46,7 +46,7 @@ sub usage
   exit(1);
 }
 
-banner;
+
 getopts('f:t:c:h:', \%opts);
 
 my $file = $opts{'f'} if $opts{'f'};
@@ -62,7 +62,7 @@ if ($opts{'h'} || !(%opts)) {
 	usage();
 	exit 0;
 }  
-
+banner;
 system("mkdir -p log/$testType 2>/dev/null ");
 
 if ($testType eq "session")
