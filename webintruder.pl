@@ -8,14 +8,6 @@ use MIME::Base64 qw( decode_base64 );
 use webintruder;
 no warnings;
 
-my $banner = <<EOF;
-                                                        
-WEB INTRUDER                                                                                                                      
-
-Autor: Daniel Torres Sandi
-
-EOF
-
 
 
 $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0; 
@@ -23,11 +15,19 @@ my $t = localtime;
 my $today = sprintf("%04d-%02d-%02d",$t->year + 1900, $t->mon + 1, $t->mday);
 
 my $debug =0; 
-
-print $banner;  
+my $json =0; 
+ 
 sub usage
-{
-  printf "Uso :\n";  
+{  
+print '               _    _____       _                  _           '."\n";
+print '              | |  |_   _|     | |                | |          '."\n";
+print ' __      _____| |__  | |  _ __ | |_ _ __ _   _  __| | ___ _ __ '."\n";
+print ' \ \ /\ / / _ \ |_ \ | | | |_ \| __|  __| | | |/ _` |/ _ \  __|'."\n";
+print '  \ V  V /  __/ |_) || |_| | | | |_| |  | |_| | (_| |  __/ |   '."\n";
+print '   \_/\_/ \___|_.__/_____|_| |_|\__|_|   \__,_|\__,_|\___|_|   v1.0'."\n";
+print "\n";
+ printf "Uso :\n";                                                                  
+  
   printf "webintruder.pl -f file.xml -t {session/sqli/error/overflow/login}  -c cookie \n\n";  
   printf "webintruder.pl -f file.xml -t sqli \n";
   printf "webintruder.pl -f file.xml -t login \n";
@@ -71,7 +71,7 @@ close (SALIDA);
 my $xml = new XML::Simple;
 
 # read accounts XML file
-$request_xml = $xml->XMLin($file);
+$request_xml = $xml->XMLin($file, ForceArray=>['item']);
 $request_number = @{$request_xml->{item}}; 
 if($testType eq "session")
 	{print GREEN,"[+] Testeando con la cookie = $cookie \n\n ", RESET;}
@@ -115,7 +115,7 @@ for (my $i=0; $i<$request_number;$i++)
   my @headers_array = split("\r\n\r\n",$request);
     
   $headers = @headers_array[0];
-  $request_parameters = @headers_array[1];
+  $request_parameters = @headers_array[1]; #POST params
   
   #print	"HEADERS $headers \n"; 
   print	"request_parameters $request_parameters \n" if ($debug); 
@@ -162,15 +162,36 @@ for (my $i=0; $i<$request_number;$i++)
    }
 	   ################ acceder a todas las variables POST/GET #####################
 	   	   
+    if($request_parameters =~ /{/m){
+	#JSON request	
+	print BLUE,"\t[+] Peticion JSON detectada \n ", RESET;  
+	$json = 1;
 	my %name_value_array;	     
-	my @parameters_array = split('&',$request_parameters);
+	my @parameters_array = split(',',$request_parameters);
 	foreach my $param (@parameters_array)
-	{						
-		my @param_array = split('=',$param);
-		my $param_name = @param_array[0];
-		my $param_value = @param_array[1];		
-		push @name_value_array, { $param_name => $param_value};
+		{								
+			$param =~ s/"|{|}//g; 
+			my @param_array = split(':',$param);
+			my $param_name = @param_array[0];
+			my $param_value = @param_array[1];		
+			push @name_value_array, { $param_name => $param_value};
+		} 
+    }
+    else
+    {
+		# Peticion POST normal
+		my %name_value_array;	     
+		my @parameters_array = split('&',$request_parameters);
+		foreach my $param (@parameters_array)
+		{						
+			my @param_array = split('=',$param);
+			my $param_name = @param_array[0];
+			my $param_value = @param_array[1];		
+			push @name_value_array, { $param_name => $param_value};
+		}
 	}
+    
+    	   	   
 	# @name_value_array contiene:
 	# $VAR1 = {
           #'searchword' => 'sss'
@@ -225,30 +246,39 @@ for (my $i=0; $i<$request_number;$i++)
 		}#end GET
 		   			  
 	    
-			
+		#POST	
 		########## send error in all parameters ###############
 		#print Dumper @name_value_array;
 		foreach my $hash_ref (@name_value_array) {					
 			foreach my $param1 (keys %{$hash_ref}) {														
-				print BLUE,"\t[+] Probando parametro $param1  \n ", RESET;  
-				$new_request_parameters = "$param1=INJECT&";				
+				print BLUE,"\t[+] Probando parametro: $param1  \n ", RESET;  
+				if ($json)
+					{$new_request_parameters = "{\"$param1\":\"INJECT\"";}
+				else
+					{$new_request_parameters = "$param1=INJECT";}
+				
+				
 				foreach my $hash_ref2 (@name_value_array) {					
 					foreach my $param2 (keys %{$hash_ref2}) {
 						if ($param1 ne $param2)
 							{	
-								my $current_value = ${$hash_ref2}{$param2};							 							 
-								$new_request_parameters .= "$param2=$current_value&";
+								my $current_value = ${$hash_ref2}{$param2};	
+								if ($json)
+									{$new_request_parameters .= ",\"$param2\":\"$current_value\"";}
+								else
+									{$new_request_parameters .= "&$param2=$current_value";}
 							}
 						}										
 					}
+					$new_request_parameters .= "}";
 				
 					open (MYINPUT,"</usr/share/webintruder/payloads/sqli.txt") || die "ERROR: Can not open the file /usr/share/webintruder/payloads/sqli.txt\n";						
 					while ($inject=<MYINPUT>)
 					{ 
 						$inject =~ s/\n//g; 
 						$final_request_parameters = $new_request_parameters; 
-						$final_request_parameters =~ s/INJECT/$inject/g; 
-						print "request_parameters $final_request_parameters \n" if ($debug);
+						print "request_parameter 1 $final_request_parameters \n" if ($debug);
+						$final_request_parameters =~ s/INJECT/$inject/g; 						
 						$pwned = $webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
 						$req_id++;
 						print "pwned $pwned \n" if ($debug);
@@ -276,19 +306,25 @@ for (my $i=0; $i<$request_number;$i++)
 			######## Send request  variable[]=fsfs
 			#print Dumper @name_value_array;
 			my $new_request_parameters ;
-			foreach my $hash_ref (@name_value_array) {					
-				foreach my $param1 (keys %{$hash_ref}) {												
-					print BLUE,"\t[+] Probando con el fomato $param1\[]=value \n ", RESET;  
-					$new_request_parameters .= "$param1\[\]=${$hash_ref}{$param1}&";	
-				}									
-			}
+			
+			
+			if (!($json))			
+			{
+				foreach my $hash_ref (@name_value_array) {					
+					foreach my $param1 (keys %{$hash_ref}) {												
+						print BLUE,"\t[+] Probando con el fomato $param1\[]=value \n ", RESET;  
+						$new_request_parameters .= "$param1\[\]=${$hash_ref}{$param1}&";	
+					}									
+				}
 				
-			print "request_parameters $new_request_parameters \n" if ($debug);	
-			$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $new_request_parameters,req_id => $req_id, cookie => $cookie);
-			$req_id++;
-			print "pwned $pwned \n" if ($debug);
-			if ($pwned)
-				{last;}	
+				print "request_parameters $new_request_parameters \n" if ($debug);	
+				$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $new_request_parameters,req_id => $req_id, cookie => $cookie);
+				$req_id++;
+				print "pwned $pwned \n" if ($debug);
+				if ($pwned)
+					{last;}	
+				
+			}			
 		 ########################
 		 
 		 ######### la variable esta al finalizar la url https://dominio.com.bo/Usuarios/Usuario/12
@@ -323,18 +359,25 @@ for (my $i=0; $i<$request_number;$i++)
 		 #########################################################
 		 
 		 
-		 ########## send Injection in all parameters ###############
-			    
+		 #POST
+		 ########## send Injection in all parameters ###############			   
 		 foreach my $hash_ref (@name_value_array) {					
-			foreach my $param1 (keys %{$hash_ref}) {								
-				$new_request_parameters = "$param1=INJECT&";
-				print BLUE,"\t[+] Probando parametro $param1  con el resto de payloads\n ", RESET;  
+			foreach my $param1 (keys %{$hash_ref}) {													
+				print BLUE,"\t[+] Probando parametro: $param1  \n ", RESET;  
+				if ($json)
+					{$new_request_parameters = "{\"$param1\":\"INJECT\"";}
+				else
+					{$new_request_parameters = "$param1=INJECT";}
+					 								
 				foreach my $hash_ref2 (@name_value_array) {					
 					foreach my $param2 (keys %{$hash_ref2}) {
 						if ($param1 ne $param2)
 						{	
-							my $current_value = ${$hash_ref2}{$param2};							 							 
-							$new_request_parameters .= "$param2=$current_value&";							 
+							my $current_value = ${$hash_ref2}{$param2};							
+							if ($json)
+								{$new_request_parameters .= ",\"$param2\":\"$current_value\"";}
+							else
+								{$new_request_parameters .= "&$param2=$current_value";}								 
 						}
 					}										
 				}
