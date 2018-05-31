@@ -21,7 +21,7 @@ Testeado en Kali 2:
 
 ### **webintruder.pl**
 
-Para usar cualquiera de las funcionalidades de este script primero necesitamos guardar las peticiones POST/GET interceptadas por BurpSuite en un archivo xml (Guardar al menos 2 peticiones):
+Para usar cualquiera de las funcionalidades de este script primero necesitamos guardar las peticiones POST/GET interceptadas por BurpSuite en un archivo xml:
 ![enter image description here](https://i.imgur.com/4o0TkIf.png)
 
 Opciones: 
