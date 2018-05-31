@@ -275,7 +275,8 @@ for (my $i=0; $i<$request_number;$i++)
 							}
 						}										
 					}
-					$new_request_parameters .= "}";
+					if ($json){$new_request_parameters .= "}";}
+					
 				
 					open (MYINPUT,"</usr/share/webintruder/payloads/sqli.txt") || die "ERROR: Can not open the file /usr/share/webintruder/payloads/sqli.txt\n";						
 					while ($inject=<MYINPUT>)
