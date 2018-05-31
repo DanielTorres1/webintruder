@@ -16,18 +16,24 @@ my $today = sprintf("%04d-%02d-%02d",$t->year + 1900, $t->mon + 1, $t->mday);
 
 my $debug =0; 
 my $json =0; 
- 
+
+sub banner
+{
+	print '               _    _____       _                  _           '."\n";
+	print '              | |  |_   _|     | |                | |          '."\n";
+	print ' __      _____| |__  | |  _ __ | |_ _ __ _   _  __| | ___ _ __ '."\n";
+	print ' \ \ /\ / / _ \ |_ \ | | | |_ \| __|  __| | | |/ _` |/ _ \  __|'."\n";
+	print '  \ V  V /  __/ |_) || |_| | | | |_| |  | |_| | (_| |  __/ |   '."\n";
+	print '   \_/\_/ \___|_.__/_____|_| |_|\__|_|   \__,_|\__,_|\___|_|   v1.0'."\n";
+	print "\n";
+	print "Autor: Daniel Torres\n";
+	print "\n";
+}
+
 sub usage
 {  
-print '               _    _____       _                  _           '."\n";
-print '              | |  |_   _|     | |                | |          '."\n";
-print ' __      _____| |__  | |  _ __ | |_ _ __ _   _  __| | ___ _ __ '."\n";
-print ' \ \ /\ / / _ \ |_ \ | | | |_ \| __|  __| | | |/ _` |/ _ \  __|'."\n";
-print '  \ V  V /  __/ |_) || |_| | | | |_| |  | |_| | (_| |  __/ |   '."\n";
-print '   \_/\_/ \___|_.__/_____|_| |_|\__|_|   \__,_|\__,_|\___|_|   v1.0'."\n";
-print "\n";
- printf "Uso :\n";                                                                  
-  
+	banner;
+  printf "Uso :\n";                                                                   
   printf "webintruder.pl -f file.xml -t {session/sqli/error/overflow/login}  -c cookie \n\n";  
   printf "webintruder.pl -f file.xml -t sqli \n";
   printf "webintruder.pl -f file.xml -t login \n";
@@ -40,6 +46,7 @@ print "\n";
   exit(1);
 }
 
+banner;
 getopts('f:t:c:h:', \%opts);
 
 my $file = $opts{'f'} if $opts{'f'};
