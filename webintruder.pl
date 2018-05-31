@@ -242,10 +242,8 @@ for (my $i=0; $i<$request_number;$i++)
 				$final_url = $url_inject; 
 				$final_url =~ s/INJECT/$inject/g; 					
 				print "final_url $final_url \n" if ($debug);
-				$pwned = $webintruder->request(url => $final_url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
-				$req_id++;										
-				if ($pwned)
-					{print RED,"\t[+] Pwned  !! \n ", RESET;  last;}			
+				$webintruder->request(url => $final_url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
+				$req_id++;														
 						
 			}
 			close MYINPUT;
@@ -286,11 +284,8 @@ for (my $i=0; $i<$request_number;$i++)
 						$final_request_parameters = $new_request_parameters; 
 						print "request_parameter 1 $final_request_parameters \n" if ($debug);
 						$final_request_parameters =~ s/INJECT/$inject/g; 						
-						$pwned = $webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
-						$req_id++;
-						print "pwned $pwned \n" if ($debug);
-						if ($pwned)
-							{last;}			
+						$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
+						$req_id++;						
 						
 						}
 						close MYINPUT;								
@@ -326,10 +321,7 @@ for (my $i=0; $i<$request_number;$i++)
 				
 				print "request_parameters $new_request_parameters \n" if ($debug);	
 				$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $new_request_parameters,req_id => $req_id, cookie => $cookie);
-				$req_id++;
-				print "pwned $pwned \n" if ($debug);
-				if ($pwned)
-					{last;}	
+				$req_id++;				
 				
 			}			
 		 ########################
@@ -357,7 +349,7 @@ for (my $i=0; $i<$request_number;$i++)
 				$final_url = $url_inject; 
 				$final_url =~ s/INJECT/$inject/g; 					
 				print "final_url $final_url \n" if ($debug);
-				$pwned = $webintruder->request(url => $final_url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
+			    $webintruder->request(url => $final_url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
 				$req_id++;																			
 			}
 			close MYINPUT;
@@ -396,7 +388,7 @@ for (my $i=0; $i<$request_number;$i++)
 					$final_request_parameters = $new_request_parameters; 
 					$final_request_parameters =~ s/INJECT/$inject/g; 
 					print "request_parameters $final_request_parameters \n" if ($debug);
-					$pwned = $webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
+					$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
 					$req_id++;												
 					}
 					close MYINPUT;								
