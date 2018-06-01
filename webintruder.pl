@@ -14,7 +14,7 @@ $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
 my $t = localtime;
 my $today = sprintf("%04d-%02d-%02d",$t->year + 1900, $t->mon + 1, $t->mday);
 
-my $debug =0; 
+my $debug = 0; 
 my $json =0; 
 
 sub banner
@@ -382,6 +382,8 @@ for (my $i=0; $i<$request_number;$i++)
 					}										
 				}
 		
+				if ($json){$new_request_parameters .= "}";}
+				
 				open (MYINPUT,"</usr/share/webintruder/payloads/error.txt") || die "ERROR: Can not open the file /usr/share/webintruder/payloads/sqli.txt\n";						
 				while ($inject=<MYINPUT>)
 					{ 

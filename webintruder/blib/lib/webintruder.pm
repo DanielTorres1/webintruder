@@ -82,6 +82,8 @@ my @sqlerrors = ( 'error in your SQL syntax',
  'mysql_fetch_array()',
  'Syntax error',
  'mysql_numrows()',
+ 'at eval',
+ 'eval at',
  'GetArray()',
  'FetchRow()');
 
@@ -119,7 +121,7 @@ my @sqlerrors = ( 'error in your SQL syntax',
 		{$match_status = 1;}	
 	##################	
 		
-   ###### chech error in response #####
+   ###### check error in response #####   
 	foreach (@sqlerrors)
 	{	
 		 if($decoded_content =~ /$_/i)
