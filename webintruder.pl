@@ -34,26 +34,27 @@ sub usage
 {  
 	banner;
   printf "Uso :\n";                                                                   
-  printf "webintruder.pl -f file.xml -t {session/sqli/error/overflow/login/repeat}  -c cookie \n\n";  
-  printf "webintruder.pl -f file.xml -t sqli \n";
+  printf "webintruder.pl -f file.xml -t {session/sqli/error/overflow/repeat}  -c cookie \n\n";  
+  printf "webintruder.pl -f file.xml -t sqli \n"; 
   printf "webintruder.pl -f file.xml -t repeat -p list.txt \n";
-  printf "webintruder.pl -f file.xml -t login \n";
   printf "webintruder.pl -f file.xml -t overflow \n";
   printf "webintruder.pl -f file.xml -t error \n";
   printf "webintruder.pl -f file.xml -t session -c \"PHPSESSION=hfs77fhsuf7\" \n";
   printf "webintruder.pl -f file.xml -t session -c \"PHPSESSION=0\" \n";
   printf "webintruder.pl -f file.xml -t session -c nocookie \n";
+  printf "webintruder.pl -f file.xml -t lfi -o {linux/windows} \n";
   
   exit(1);
 }
 
 
-getopts('f:t:c:p:h:', \%opts);
+getopts('f:t:c:o:p:h:', \%opts);
 
 my $file = $opts{'f'} if $opts{'f'};
 my $testType = $opts{'t'} if $opts{'t'};
 my $passFile = $opts{'p'} if $opts{'p'};
 my $cookie = $opts{'c'} if $opts{'c'};
+my $os = $opts{'o'} if $opts{'o'};
 
 my $section = $file;
 $section =~ s/\..*//s; # extract filename
@@ -86,9 +87,9 @@ if($testType eq "session")
 	{print GREEN,"[+] Testeando con la cookie = $cookie \n\n ", RESET;}
 elsif($testType ne "repeat")
 	{
-	my $payloads_count=`cat /usr/share/webintruder/payloads/$testType.txt | wc -l`;		
+	my $payloads_count=`cat /usr/share/webintruder/payloads/$testType$os.txt | wc -l`;		
 	$payloads_count =~ s/\n//g; 	
-	print GREEN,"[+] Payloads: $payloads_count (/usr/share/webintruder/payloads/$testType.txt) \n ", RESET; 
+	print GREEN,"[+] Payloads: $payloads_count (/usr/share/webintruder/payloads/$testType$os.txt) \n ", RESET; 
 	}
 print GREEN,"[+] Tipo de test: $testType \n", RESET; 	
 print GREEN,"[+] Tenemos $request_number peticion(es) \n ", RESET;    
@@ -241,6 +242,8 @@ for (my $i=0; $i<$request_number;$i++)
 		}
 		close MYINPUT;
 	}
+	
+	
 	   
 	################ sqli 	#######################      
 	if ($testType eq "sqli")
@@ -330,6 +333,93 @@ for (my $i=0; $i<$request_number;$i++)
 		} # end sqli
 		
 	
+	################ lfi 	#######################      
+	if ($testType eq "lfi")
+	{		    
+		if ($method eq "GET" && $request_parameters eq "") # la variable esta al finalizar la url https://dominio.com.bo/Usuarios/Usuario/12
+		{
+			# https://dominio.com.bo/Usuarios/Usuario/12	---> https://dominio.com.bo/Usuarios/Usuario/INJECT
+			my $url_inject = "";
+			my @url_array = split('/',$url);
+			$len = $#url_array;
+
+			for (my $i=0;$i<=$len; $i++)
+			{
+				if ($i ne $len)
+					{$url_inject .= @url_array[$i]."/";}
+				else
+					{$url_inject .= "INJECT";}
+			}
+				
+			######### send 	request https://dominio.com.bo/Usuarios/Usuario/'INJECT
+			open (MYINPUT,"</usr/share/webintruder/payloads/lfi$os.txt") || die "ERROR: Can not open the file /usr/share/webintruder/payloads/lfi$os.txt\n";
+			while ($inject=<MYINPUT>)
+			{ 
+				$inject =~ s/\n//g; 
+				$final_url = $url_inject; 
+				$final_url =~ s/INJECT/$inject/g; 					
+				
+				##post
+				$final_request_parameters = $new_request_parameters; 
+				print "request_parameter 1 $final_request_parameters \n" if ($debug);
+				$final_request_parameters =~ s/INJECT/$inject/g; 						
+				######
+						
+				print "final_url $final_url \n" if ($debug);
+				$webintruder->request(url => $final_url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
+				$req_id++;														
+						
+			}
+			close MYINPUT;
+				#################################################
+		}#end GET
+		   			  
+	    
+		#POST	
+		########## send error in all parameters ###############
+		#print Dumper @name_value_array;
+		foreach my $hash_ref (@name_value_array) {					
+			foreach my $param1 (keys %{$hash_ref}) {														
+				print BLUE,"\t[+] Probando parametro: $param1  \n ", RESET;  
+				if ($json)
+					{$new_request_parameters = "{\"$param1\":\"INJECT\"";}
+				else
+					{$new_request_parameters = "$param1=INJECT";}
+				
+				
+				foreach my $hash_ref2 (@name_value_array) {					
+					foreach my $param2 (keys %{$hash_ref2}) {
+						if ($param1 ne $param2)
+							{	
+								my $current_value = ${$hash_ref2}{$param2};	
+								if ($json)
+									{$new_request_parameters .= ",\"$param2\":\"$current_value\"";}
+								else
+									{$new_request_parameters .= "&$param2=$current_value";}
+							}
+						}										
+					}
+					if ($json){$new_request_parameters .= "}";}
+					
+				
+					open (MYINPUT,"</usr/share/webintruder/payloads/lfi$os.txt") || die "ERROR: Can not open the file /usr/share/webintruder/payloads/lfi$os.txt\n";						
+					while ($inject=<MYINPUT>)
+					{ 
+						$inject =~ s/\n//g; 
+						$final_request_parameters = $new_request_parameters; 
+						print "request_parameter 1 $final_request_parameters \n" if ($debug);
+						$final_request_parameters =~ s/INJECT/$inject/g; 						
+						$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
+						$req_id++;						
+						
+						}
+						close MYINPUT;								
+					}										 
+				}
+				undef @name_value_array;
+				#####################################		  
+		} # end lfi
+		
 	############### error ###############	
 	if ($testType eq "error")
 	   {
@@ -441,3 +531,4 @@ for (my $i=0; $i<$request_number;$i++)
 	print SALIDA "\n\n";
 	close (SALIDA);	
 } #for request
+
