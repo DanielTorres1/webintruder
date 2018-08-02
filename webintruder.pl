@@ -43,18 +43,21 @@ sub usage
   printf "webintruder.pl -f file.xml -t session -c \"PHPSESSION=0\" \n";
   printf "webintruder.pl -f file.xml -t session -c nocookie \n";
   printf "webintruder.pl -f file.xml -t lfi -o {linux/windows} \n";
+  printf "webintruder.pl -f file.xml -t login -u root -p passwords.txt \n";
   
   exit(1);
 }
 
 
-getopts('f:t:c:o:p:h:', \%opts);
+getopts('f:t:c:o:p:h:u:q:', \%opts);
 
 my $file = $opts{'f'} if $opts{'f'};
 my $testType = $opts{'t'} if $opts{'t'};
 my $passFile = $opts{'p'} if $opts{'p'};
 my $cookie = $opts{'c'} if $opts{'c'};
 my $os = $opts{'o'} if $opts{'o'};
+my $user = $opts{'u'} if $opts{'u'};
+my $quiet = $opts{'q'} if $opts{'q'};
 
 my $section = $file;
 $section =~ s/\..*//s; # extract filename
@@ -65,7 +68,9 @@ if ($opts{'h'} || !(%opts)) {
 	usage();
 	exit 0;
 }  
-banner;
+if ($quiet ne 1)
+  {banner;}
+
 system("mkdir -p log/$testType 2>/dev/null ");
 
 if ($testType eq "session")
@@ -74,23 +79,25 @@ else
 	{$title = "PARAMETROS";}
 
 open (SALIDA,">$section-$testType.csv") || die "ERROR: No puedo abrir el fichero $testType.csv\n";
-print SALIDA "ID;URL;MÉTODO;$title;ESTADO ORIGINAL;ESTADO ACTUAL;¿COINCIDEN?;ERROR EN LA RESPUESTA;LONGITUD DE LA RESPUESTA\n";
+print SALIDA "ID;$url;MÉTODO;$title;ESTADO ORIGINAL;ESTADO ACTUAL;¿COINCIDEN?;ERROR EN LA RESPUESTA;LONGITUD DE LA RESPUESTA\n";
 close (SALIDA);	
 		
-################### Load accounts ####################
+################### Load URLs ####################
 my $xml = new XML::Simple;
 
 # read accounts XML file
 $request_xml = $xml->XMLin($file, ForceArray=>['item']);
 $request_number = @{$request_xml->{item}}; 
-if($testType eq "session")
+if ($testType eq "session")
 	{print GREEN,"[+] Testeando con la cookie = $cookie \n\n ", RESET;}
-elsif($testType ne "repeat")
+	
+if ($testType eq "sqli" || $testType eq "overflow" || $testType eq "error" || $testType eq "lfi")
 	{
 	my $payloads_count=`cat /usr/share/webintruder/payloads/$testType$os.txt | wc -l`;		
 	$payloads_count =~ s/\n//g; 	
 	print GREEN,"[+] Payloads: $payloads_count (/usr/share/webintruder/payloads/$testType$os.txt) \n ", RESET; 
 	}
+	
 print GREEN,"[+] Tipo de test: $testType \n", RESET; 	
 print GREEN,"[+] Tenemos $request_number peticion(es) \n ", RESET;    
 
@@ -107,7 +114,7 @@ my $req_id=0;
 for (my $i=0; $i<$request_number;$i++)
 {
      
-   my $url = $request_xml->{item}->[$i]->{url};  
+   my $url = $request_xml->{item}->[$i]->{url};     
    my $method = $request_xml->{item}->[$i]->{method};      
    my $original_status = $request_xml->{item}->[$i]->{status};  
    my $original_response64 = $request_xml->{item}->[$i]->{response}->{content};   
@@ -126,9 +133,7 @@ for (my $i=0; $i<$request_number;$i++)
     
   $headers = @headers_array[0];
   $request_parameters = @headers_array[1]; #POST params
-  
-  #print	"HEADERS $headers \n"; 
-  print	"request_parameters $request_parameters \n" if ($debug); 
+   
    
    ########## procesar los headers ##########
    my @headers_array2 = split("\n",$headers);
@@ -166,10 +171,12 @@ for (my $i=0; $i<$request_number;$i++)
    if ($method eq "GET")  
    {
 	   	my @url_array = split('\?',$url);
-		$request_parameters = @url_array [1];
-		$url = @url_array [0];
-			
+		$url = @url_array[0];
+		$request_parameters = @url_array[1];		
    }
+   
+   print "url $url \n";
+   print	"request_parameters ($request_parameters) \n" if ($debug); 
 	   ################ acceder a todas las variables POST/GET #####################
 	   	   
     if($request_parameters =~ /{/m){
@@ -244,25 +251,65 @@ for (my $i=0; $i<$request_number;$i++)
 	}
 	
 	
+	################ login  #######################   
+	if ($testType eq "login")
+	{	  			
+		open (MYINPUT,"<$passFile") || die "ERROR: Can not open the file $passFile\n";						
+		while ($password=<MYINPUT>)
+		{ 
+			# Get request
+			$password =~ s/\n//g; 				
+			$final_url = $url;			
+			$final_url =~ s/USUARIO/$user/g;
+			$final_url =~ s/PASSWORD/$password/g;
+			
+			
+			
+			# Post request
+			$final_request_parameters = $request_parameters;			
+			$final_request_parameters =~ s/USUARIO/$user/g;
+			$final_request_parameters =~ s/PASSWORD/$password/g;
+			#
+			
+			print "final_url $final_url \n" if ($debug);
+		    $webintruder->request(url => $final_url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
+			$req_id++;																			
+		}
+		close MYINPUT;
+	}
+	
+	
 	   
 	################ sqli 	#######################      
 	if ($testType eq "sqli")
 	{		    
-		if ($method eq "GET" && $request_parameters eq "") # la variable esta al finalizar la url https://dominio.com.bo/Usuarios/Usuario/12
+		if ($method eq "GET" && $request_parameters eq "") # la variable esta al finalizar la $url https://dominio.com.bo/Usuarios/Usuario/12
 		{
-			# https://dominio.com.bo/Usuarios/Usuario/12	---> https://dominio.com.bo/Usuarios/Usuario/INJECT
+			print BLUE,"\t[+] Peticion con parametros concatenados a la URL detectada \n ", RESET;  			
+			my $last_char = substr $url, -1;  # last word			
 			my $url_inject = "";
-			my @url_array = split('/',$url);
-			$len = $#url_array;
-
-			for (my $i=0;$i<=$len; $i++)
+			# https://dominio.com.bo/Usuarios/Usuario/index.php/	---> https://dominio.com.bo/Usuarios/Usuario/index.php/INJECT
+			if ($last_char eq "/")
 			{
+				$url_inject = $url."INJECT";
+			}
+			else
+			{
+			  # https://dominio.com.bo/Usuarios/Usuario/12	---> https://dominio.com.bo/Usuarios/Usuario/INJECT			  
+			  my @url_array = split('/',$url);
+			  $len = $#url_array;
+
+			  for (my $i=0;$i<=$len; $i++)
+			  {
+				  
 				if ($i ne $len)
-					{$url_inject .= @url_array[$i]."/";}
+					{$url_inject = $url_inject.@url_array[$i]."/";}
 				else
 					{$url_inject .= "INJECT";}
-			}
-				
+			  }
+			}#end else
+
+			print "url_inject $url_inject \n" if ($debug);
 			######### send 	request https://dominio.com.bo/Usuarios/Usuario/'INJECT
 			open (MYINPUT,"</usr/share/webintruder/payloads/sqli.txt") || die "ERROR: Can not open the file /usr/share/webintruder/payloads/sqli.txt\n";						
 			while ($inject=<MYINPUT>)
@@ -273,7 +320,7 @@ for (my $i=0; $i<$request_number;$i++)
 				
 				##post
 				$final_request_parameters = $new_request_parameters; 
-				print "request_parameter 1 $final_request_parameters \n" if ($debug);
+				#print "request_parameter2 $final_request_parameters \n" if ($debug);
 				$final_request_parameters =~ s/INJECT/$inject/g; 						
 				######
 						
@@ -287,8 +334,7 @@ for (my $i=0; $i<$request_number;$i++)
 		}#end GET
 		   			  
 	    
-		#POST	
-		########## send error in all parameters ###############
+		#POST/GET 	parameters
 		#print Dumper @name_value_array;
 		foreach my $hash_ref (@name_value_array) {					
 			foreach my $param1 (keys %{$hash_ref}) {														
@@ -318,9 +364,9 @@ for (my $i=0; $i<$request_number;$i++)
 					while ($inject=<MYINPUT>)
 					{ 
 						$inject =~ s/\n//g; 
-						$final_request_parameters = $new_request_parameters; 
-						print "request_parameter 1 $final_request_parameters \n" if ($debug);
-						$final_request_parameters =~ s/INJECT/$inject/g; 						
+						$final_request_parameters = $new_request_parameters; 						
+						$final_request_parameters =~ s/INJECT/$inject/g; 	
+						print "request_parameter2 $final_request_parameters \n" if ($debug);					
 						$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
 						$req_id++;						
 						
@@ -336,7 +382,7 @@ for (my $i=0; $i<$request_number;$i++)
 	################ lfi 	#######################      
 	if ($testType eq "lfi")
 	{		    
-		if ($method eq "GET" && $request_parameters eq "") # la variable esta al finalizar la url https://dominio.com.bo/Usuarios/Usuario/12
+		if ($method eq "GET" && $request_parameters eq "") # la variable esta al finalizar la $url https://dominio.com.bo/Usuarios/Usuario/12
 		{
 			# https://dominio.com.bo/Usuarios/Usuario/12	---> https://dominio.com.bo/Usuarios/Usuario/INJECT
 			my $url_inject = "";
@@ -361,7 +407,7 @@ for (my $i=0; $i<$request_number;$i++)
 				
 				##post
 				$final_request_parameters = $new_request_parameters; 
-				print "request_parameter 1 $final_request_parameters \n" if ($debug);
+				#print "request_parameter2  $final_request_parameters \n" if ($debug);
 				$final_request_parameters =~ s/INJECT/$inject/g; 						
 				######
 						
@@ -407,7 +453,7 @@ for (my $i=0; $i<$request_number;$i++)
 					{ 
 						$inject =~ s/\n//g; 
 						$final_request_parameters = $new_request_parameters; 
-						print "request_parameter 1 $final_request_parameters \n" if ($debug);
+						#print "request_parameter2  $final_request_parameters \n" if ($debug);
 						$final_request_parameters =~ s/INJECT/$inject/g; 						
 						$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
 						$req_id++;						
@@ -450,7 +496,7 @@ for (my $i=0; $i<$request_number;$i++)
 			}			
 		 ########################
 		 
-		 ######### la variable esta al finalizar la url https://dominio.com.bo/Usuarios/Usuario/12
+		 ######### la variable esta al finalizar la $url https://dominio.com.bo/Usuarios/Usuario/12
 		if ($method eq "GET" && $request_parameters eq "") 
 		{				
 			# https://dominio.com.bo/Usuarios/Usuario/12	---> https://dominio.com.bo/Usuarios/Usuario/INJECT

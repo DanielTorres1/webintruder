@@ -30,6 +30,7 @@ WriteMakefile(
         'Getopt::Std' => 0,         
         'Term::ANSIColor' => 0, 
         'MIME::Base64 ' =>0,
+        'XML::Simple' =>0,
         'JSON' =>0,
         
     },
