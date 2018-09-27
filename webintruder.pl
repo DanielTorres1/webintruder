@@ -34,27 +34,30 @@ sub usage
 {  
 	banner;
   printf "Uso :\n";                                                                   
-  printf "webintruder.pl -f file.xml -t {session/sqli/error/overflow/repeat}  -c cookie \n\n";  
+  printf "webintruder.pl -f file.xml -t {session/sqli/error/repeat/nodejs}  -c cookie \n\n";  
   printf "webintruder.pl -f file.xml -t sqli \n"; 
   printf "webintruder.pl -f file.xml -t repeat -p list.txt \n";
-  printf "webintruder.pl -f file.xml -t overflow \n";
   printf "webintruder.pl -f file.xml -t error \n";
+  printf "webintruder.pl -f file.xml -t nodejs \n";
   printf "webintruder.pl -f file.xml -t session -c \"PHPSESSION=hfs77fhsuf7\" \n";
   printf "webintruder.pl -f file.xml -t session -c \"PHPSESSION=0\" \n";
   printf "webintruder.pl -f file.xml -t session -c nocookie \n";
+  printf "webintruder.pl -f file.xml -t session -k \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV...I1Nd\" \n";
+  printf "webintruder.pl -f file.xml -t session -k notoken \n";
   printf "webintruder.pl -f file.xml -t lfi -o {linux/windows} \n";
   printf "webintruder.pl -f file.xml -t login -u root -p passwords.txt \n";
-  
+  printf "\t\t Capturar la petición con los valores:USUARIO y PASSWORD \n";
   exit(1);
 }
 
 
-getopts('f:t:c:o:p:h:u:q:', \%opts);
+getopts('f:t:c:o:p:h:u:k:q:', \%opts);
 
 my $file = $opts{'f'} if $opts{'f'};
 my $testType = $opts{'t'} if $opts{'t'};
 my $passFile = $opts{'p'} if $opts{'p'};
 my $cookie = $opts{'c'} if $opts{'c'};
+my $token = $opts{'k'} if $opts{'k'};
 my $os = $opts{'o'} if $opts{'o'};
 my $user = $opts{'u'} if $opts{'u'};
 my $quiet = $opts{'q'} if $opts{'q'};
@@ -132,7 +135,7 @@ for (my $i=0; $i<$request_number;$i++)
   my @headers_array = split("\r\n\r\n",$request);
     
   $headers = @headers_array[0];
-  $request_parameters = @headers_array[1]; #POST params
+  $current_request_parameters = @headers_array[1]; #POST params
    
    
    ########## procesar los headers ##########
@@ -149,19 +152,38 @@ for (my $i=0; $i<$request_number;$i++)
 		   $header_value =~ s/\r//g; 
 		   
 		   
-		   if ($testType eq "session" || $cookie ne "")
+		   if ($testType eq "session")
 		   {		   
 			
+				##### Testing session (cookie) ####
 				if ($header_name eq "Cookie")
 				{ 
 					if ($cookie ne "nocookie")
+						# set new cookie
 						{$current_headers->header($header_name => $cookie);}
 				}
 				else
+					# no change
 					{$current_headers->header($header_name => $header_value);}		   
+				#####################################
+				
+				
+				##### Testing session (token) #########
+				if ($header_name eq "Authorization")
+				{ 
+					if ($token ne "notoken")
+						# set new cookie
+						{$current_headers->header($header_name => $token);}
+				}
+				else
+					# no change
+					{$current_headers->header($header_name => $header_value);}		   
+				#####################################
+				
 		   }
 		   else		   		  
-		   {		   
+		   {		
+			   # no change   
 			   $current_headers->header($header_name => $header_value);
 		   }   
 		}	 	 
@@ -172,14 +194,14 @@ for (my $i=0; $i<$request_number;$i++)
    {
 	   	my @url_array = split('\?',$url);
 		$url = @url_array[0];
-		$request_parameters = @url_array[1];		
+		$current_request_parameters = @url_array[1];		
    }
    
    print "url $url \n";
    print	"request_parameters ($request_parameters) \n" if ($debug); 
 	   ################ acceder a todas las variables POST/GET #####################
 	   	   
-    if($request_parameters =~ /{/m){
+    if($current_request_parameters =~ /{/m){
 	#JSON request	
 	print BLUE,"\t[+] Peticion JSON detectada \n ", RESET;  
 	$json = 1;
@@ -223,7 +245,8 @@ for (my $i=0; $i<$request_number;$i++)
 	################ session 	#######################   
 	if ($testType eq "session")
 	{	  
-		$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id, cookie => $cookie);
+		$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $current_request_parameters, req_id => $req_id, cookie => $cookie);
+		
 		$req_id++;
 	}
 	
@@ -283,7 +306,7 @@ for (my $i=0; $i<$request_number;$i++)
 	################ sqli 	#######################      
 	if ($testType eq "sqli")
 	{		    
-		if ($method eq "GET" && $request_parameters eq "") # la variable esta al finalizar la $url https://dominio.com.bo/Usuarios/Usuario/12
+		if ($method eq "GET" && $current_request_parameters eq "") # la variable esta al finalizar la $url https://dominio.com.bo/Usuarios/Usuario/12
 		{
 			print BLUE,"\t[+] Peticion con parametros concatenados a la URL detectada \n ", RESET;  			
 			my $last_char = substr $url, -1;  # last word			
@@ -382,7 +405,7 @@ for (my $i=0; $i<$request_number;$i++)
 	################ lfi 	#######################      
 	if ($testType eq "lfi")
 	{		    
-		if ($method eq "GET" && $request_parameters eq "") # la variable esta al finalizar la $url https://dominio.com.bo/Usuarios/Usuario/12
+		if ($method eq "GET" && $current_request_parameters eq "") # la variable esta al finalizar la $url https://dominio.com.bo/Usuarios/Usuario/12
 		{
 			# https://dominio.com.bo/Usuarios/Usuario/12	---> https://dominio.com.bo/Usuarios/Usuario/INJECT
 			my $url_inject = "";
@@ -497,7 +520,7 @@ for (my $i=0; $i<$request_number;$i++)
 		 ########################
 		 
 		 ######### la variable esta al finalizar la $url https://dominio.com.bo/Usuarios/Usuario/12
-		if ($method eq "GET" && $request_parameters eq "") 
+		if ($method eq "GET" && $current_request_parameters eq "") 
 		{				
 			# https://dominio.com.bo/Usuarios/Usuario/12	---> https://dominio.com.bo/Usuarios/Usuario/INJECT
 			my $url_inject = "";
@@ -571,6 +594,87 @@ for (my $i=0; $i<$request_number;$i++)
 			undef @name_value_array;
 			#####################################		 		  
 		} # error type
+		
+		
+		############### nodejs ###############	
+	if ($testType eq "nodejs")
+	   {
+		   			  		 
+		 ######### la variable esta al finalizar la $url https://dominio.com.bo/Usuarios/Usuario/12
+		if ($method eq "GET" && $current_request_parameters eq "") 
+		{				
+			# https://dominio.com.bo/Usuarios/Usuario/12	---> https://dominio.com.bo/Usuarios/Usuario/INJECT
+			my $url_inject = "";
+			my @url_array = split('/',$url);
+			$len = $#url_array;
+
+			for (my $i=0;$i<=$len; $i++)
+			{
+				if ($i ne $len)
+					{$url_inject .= @url_array[$i]."/";}
+				else
+					{$url_inject .= "INJECT";}
+			}
+			######
+			
+			######### send 	request https://dominio.com.bo/Usuarios/Usuario/'INJECT
+			open (MYINPUT,"</usr/share/webintruder/payloads/nodejs.txt") || die "ERROR: Can not open the file /usr/share/webintruder/payloads/sqli.txt\n";						
+			while ($inject=<MYINPUT>)
+			{ 
+				$inject =~ s/\n//g; 
+				$final_url = $url_inject; 
+				$final_url =~ s/INJECT/$inject/g; 					
+				print "final_url $final_url \n" if ($debug);
+			    $webintruder->request(url => $final_url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
+				$req_id++;																			
+			}
+			close MYINPUT;
+			#################################################
+		 }
+		 #########################################################
+		 
+		 
+		 #POST
+		 ########## send Injection in all parameters ###############			   
+		 foreach my $hash_ref (@name_value_array) {					
+			foreach my $param1 (keys %{$hash_ref}) {													
+				print BLUE,"\t[+] Probando parametro: $param1  \n ", RESET;  
+				if ($json)
+					{$new_request_parameters = "{\"$param1\":\"INJECT\"";}
+				else
+					{$new_request_parameters = "$param1=INJECT";}
+					 								
+				foreach my $hash_ref2 (@name_value_array) {					
+					foreach my $param2 (keys %{$hash_ref2}) {
+						if ($param1 ne $param2)
+						{	
+							my $current_value = ${$hash_ref2}{$param2};							
+							if ($json)
+								{$new_request_parameters .= ",\"$param2\":\"$current_value\"";}
+							else
+								{$new_request_parameters .= "&$param2=$current_value";}								 
+						}
+					}										
+				}
+		
+				if ($json){$new_request_parameters .= "}";}
+				
+				open (MYINPUT,"</usr/share/webintruder/payloads/nodejs.txt") || die "ERROR: Can not open the file /usr/share/webintruder/payloads/sqli.txt\n";						
+				while ($inject=<MYINPUT>)
+					{ 
+					$inject =~ s/\n//g; 
+					$final_request_parameters = $new_request_parameters; 
+					$final_request_parameters =~ s/INJECT/$inject/g; 
+					print "request_parameters $final_request_parameters \n" if ($debug);
+					$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
+					$req_id++;												
+					}
+					close MYINPUT;								
+				}										 
+			}
+			undef @name_value_array;
+			#####################################		 		  
+		} # nodejs type
 		
 		################ ################################### #####################			    	 
 	open (SALIDA,">>$section-$testType.csv") || die "ERROR: No puedo abrir el fichero $testType.csv\n";

@@ -43,6 +43,7 @@
             "Term::ANSIColor" : "0",
             "Text::Table" : "0",
             "URI::Escape" : "0",
+            "XML::Simple" : "0",
             "perl" : "5.006"
          }
       }

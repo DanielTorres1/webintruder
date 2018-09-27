@@ -19,7 +19,7 @@
 #     MIN_PERL_VERSION => q[5.006]
 #     NAME => q[webintruder]
 #     PL_FILES => {  }
-#     PREREQ_PM => { Getopt::Std=>q[0], HTTP::Cookies=>q[0], HTTP::Request=>q[0], HTTP::Response=>q[0], JSON=>q[0], LWP::UserAgent=>q[0], MIME::Base64 =>q[0], Moose=>q[0], Net::SSL=>q[0], Term::ANSIColor=>q[0], Test::More=>q[0], Text::Table=>q[0], URI::Escape=>q[0] }
+#     PREREQ_PM => { Getopt::Std=>q[0], HTTP::Cookies=>q[0], HTTP::Request=>q[0], HTTP::Response=>q[0], JSON=>q[0], LWP::UserAgent=>q[0], MIME::Base64 =>q[0], Moose=>q[0], Net::SSL=>q[0], Term::ANSIColor=>q[0], Test::More=>q[0], Text::Table=>q[0], URI::Escape=>q[0], XML::Simple=>q[0] }
 #     TEST_REQUIRES => {  }
 #     VERSION_FROM => q[lib/webintruder.pm]
 #     clean => { FILES=>q[webintruder-*] }
@@ -516,6 +516,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '  Term::ANSIColor: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) '  Text::Table: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) '  URI::Escape: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  XML::Simple: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) '  perl: '\''5.006'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) 'version: '\''1.0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) 'x_serialization_backend: '\''CPAN::Meta::YAML version 0.018'\''' >> META_new.yml
@@ -566,6 +567,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '            "Term::ANSIColor" : "0",' >> META_new.json
 	$(NOECHO) $(ECHO) '            "Text::Table" : "0",' >> META_new.json
 	$(NOECHO) $(ECHO) '            "URI::Escape" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "XML::Simple" : "0",' >> META_new.json
 	$(NOECHO) $(ECHO) '            "perl" : "5.006"' >> META_new.json
 	$(NOECHO) $(ECHO) '         }' >> META_new.json
 	$(NOECHO) $(ECHO) '      }' >> META_new.json
@@ -875,6 +877,7 @@ ppd :
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Term::ANSIColor" />' >> webintruder.ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Text::Table" />' >> webintruder.ppd
 	$(NOECHO) $(ECHO) '        <REQUIRE NAME="URI::Escape" />' >> webintruder.ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="XML::Simple" />' >> webintruder.ppd
 	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="x86_64-linux-gnu-thread-multi-5.26" />' >> webintruder.ppd
 	$(NOECHO) $(ECHO) '        <CODEBASE HREF="" />' >> webintruder.ppd
 	$(NOECHO) $(ECHO) '    </IMPLEMENTATION>' >> webintruder.ppd

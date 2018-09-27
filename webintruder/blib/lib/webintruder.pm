@@ -55,7 +55,11 @@ sub request
 
 my @sqlerrors = ( 'error in your SQL syntax',
  'mysql_fetch',
+ 'Undefined index',
  'sqlsrv_fetch_object',
+ 'sqlsrv_fetch_array',
+ 'sqlsrv_free_stmt',
+ 'CDbCommand',
  "Unclosed quotation mark after the character",
  'num_rows',
  "syntax error at or near",
@@ -84,6 +88,8 @@ my @sqlerrors = ( 'error in your SQL syntax',
  'mysql_numrows()',
  'at eval',
  'eval at',
+ 'A Database Error Occurred',
+ 'error de sintaxis en o cerca de',
  'GetArray()',
  'FetchRow()');
 
