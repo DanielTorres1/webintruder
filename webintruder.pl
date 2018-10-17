@@ -289,7 +289,7 @@ for (my $i=0; $i<$request_number;$i++)
 			
 			
 			# Post request
-			$final_request_parameters = $request_parameters;			
+			$final_request_parameters = $current_request_parameters;			
 			$final_request_parameters =~ s/USUARIO/$user/g;
 			$final_request_parameters =~ s/PASSWORD/$password/g;
 			#
