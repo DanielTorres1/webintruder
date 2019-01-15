@@ -47,15 +47,21 @@ sub usage
   printf "webintruder.pl -f file.xml -t lfi -o {linux/windows} \n";
   printf "webintruder.pl -f file.xml -t login -u root -p passwords.txt \n";
   printf "\t\t Capturar la petición con los valores:USUARIO y PASSWORD \n";
+  printf "webintruder.pl -f file.xml -t vuln \n";    
+  printf "webintruder.pl -f file.xml -t repeater -r archivo.txt \n";  
+  printf "\t\t Capturar la petición con los valores:REPEAT \n";    
+  printf "webintruder.pl -f file.xml -t method -k \"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV...I1Nd\"  \n";
+  
   exit(1);
 }
 
 
-getopts('f:t:c:o:p:h:u:k:q:', \%opts);
+getopts('f:t:c:o:p:h:u:r:k:q:', \%opts);
 
 my $file = $opts{'f'} if $opts{'f'};
 my $testType = $opts{'t'} if $opts{'t'};
 my $passFile = $opts{'p'} if $opts{'p'};
+my $repeatFile = $opts{'r'} if $opts{'r'};
 my $cookie = $opts{'c'} if $opts{'c'};
 my $token = $opts{'k'} if $opts{'k'};
 my $os = $opts{'o'} if $opts{'o'};
@@ -136,6 +142,7 @@ for (my $i=0; $i<$request_number;$i++)
     
   $headers = @headers_array[0];
   $current_request_parameters = @headers_array[1]; #POST params
+  
    
    
    ########## procesar los headers ##########
@@ -152,7 +159,7 @@ for (my $i=0; $i<$request_number;$i++)
 		   $header_value =~ s/\r//g; 
 		   
 		   
-		   if ($testType eq "session")
+		   if (($testType eq "session") || ($testType eq "method"))
 		   {		   
 			
 				##### Testing session (cookie) ####
@@ -172,7 +179,7 @@ for (my $i=0; $i<$request_number;$i++)
 				if ($header_name eq "Authorization")
 				{ 
 					if ($token ne "notoken")
-						# set new cookie
+						# set new token
 						{$current_headers->header($header_name => $token);}
 				}
 				else
@@ -206,7 +213,7 @@ for (my $i=0; $i<$request_number;$i++)
 	print BLUE,"\t[+] Peticion JSON detectada \n ", RESET;  
 	$json = 1;
 	my %name_value_array;	     
-	my @parameters_array = split(',',$request_parameters);
+	my @parameters_array = split(',',$current_request_parameters);
 	foreach my $param (@parameters_array)
 		{								
 			$param =~ s/"|{|}//g; 
@@ -220,7 +227,7 @@ for (my $i=0; $i<$request_number;$i++)
     {
 		# Peticion POST normal
 		my %name_value_array;	     
-		my @parameters_array = split('&',$request_parameters);
+		my @parameters_array = split('&',$current_request_parameters);
 		foreach my $param (@parameters_array)
 		{						
 			my @param_array = split('=',$param);
@@ -273,6 +280,19 @@ for (my $i=0; $i<$request_number;$i++)
 		close MYINPUT;
 	}
 	
+	################ method  #######################   
+	if ($testType eq "method")
+	{	  			
+		@methods = ('PUT','PATCH','LOCK','UNLOCK','LINK','UNLINK','PROFIND','COPY','HEAD','OPTIONS','CONNECT','HEAD','VIEW','GET','POST','DELETE');
+		foreach $current_method (@methods) 
+		{ 			
+			print "final_url $final_url \n" if ($debug);			
+		    $webintruder->request(url => $url, method => $current_method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $request_parameters,req_id => $req_id);
+			$req_id++;																			
+		}
+		close MYINPUT;
+	}
+	
 	
 	################ login  #######################   
 	if ($testType eq "login")
@@ -300,6 +320,31 @@ for (my $i=0; $i<$request_number;$i++)
 		}
 		close MYINPUT;
 	}
+	
+	
+	################ repeater  #######################   
+	if ($testType eq "repeater")
+	{	  			
+		open (MYINPUT,"<$repeatFile") || die "ERROR: Can not open the file $repeatFile\n";						
+		while ($variable1=<MYINPUT>)
+		{ 
+			# Get request
+			$variable1 =~ s/\n//g; 				
+			$final_url = $url;						
+			$final_url =~ s/REPEAT/$variable1/g;			
+			
+			# Post request
+			$final_request_parameters = $current_request_parameters;			
+			$final_request_parameters =~ s/REPEAT/$variable1/g;			
+			#
+			
+			print "final_url $final_url \n" if ($debug);
+		    $webintruder->request(url => $final_url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $final_request_parameters,req_id => $req_id);
+			$req_id++;																			
+		}
+		close MYINPUT;
+	}
+	
 	
 	
 	   
@@ -489,7 +534,21 @@ for (my $i=0; $i<$request_number;$i++)
 				#####################################		  
 		} # end lfi
 		
-	############### error ###############	
+	############### vuln ###############	
+	
+	if ($testType eq "vuln")
+	{
+	    #test cve2012-1823 PHP CGI
+		$webintruder->request(url =>$url.'?-s', method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => "",req_id => $req_id, cookie => $cookie);
+		$req_id++;	
+			
+		#test php code injection
+		$webintruder->request(url =>$url.'?${print(md5(12345))}', method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => "",req_id => $req_id, cookie => $cookie);
+		$req_id++;	
+		
+	}	
+				
+				
 	if ($testType eq "error")
 	   {
 		   			  
@@ -514,7 +573,7 @@ for (my $i=0; $i<$request_number;$i++)
 				
 				print "request_parameters $new_request_parameters \n" if ($debug);	
 				$webintruder->request(url =>$url, method => $method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $new_request_parameters,req_id => $req_id, cookie => $cookie);
-				$req_id++;				
+				$req_id++;											
 				
 			}			
 		 ########################

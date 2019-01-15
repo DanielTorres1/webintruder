@@ -106,7 +106,7 @@ my @sqlerrors = ( 'error in your SQL syntax',
 	  $response = $self->dispatch(url =>$final_url, method => 'GET',headers => $headers);
 	}
   else
-	{$response = $self->dispatch(url =>$url, method => 'POST',post_data =>$request_parameters,headers => $headers);}	
+	{$response = $self->dispatch(url =>$url, method => $method, post_data =>$request_parameters, headers => $headers);}	
 	
 	
 	my $response_header =$response->as_string;				
@@ -176,12 +176,121 @@ my $url = $options{ url };
 my $method = $options{ method };
 my $headers = $options{ headers };
 my $response;
+ 
+
 
 if ($method eq 'POST_OLD')
   {     
    my $post_data = $options{ post_data };        
    $response = $self->browser->post($url,$post_data);
   }  
+
+if ($method eq 'PUT')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(PUT => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }  
+
+
+if ($method eq 'PATCH')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(PATCH => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }  
+
+
+if ($method eq 'LOCK')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(LOCK => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  } 
+         
+if ($method eq 'UNLOCK')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(UNLOCK => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }   
+
+if ($method eq 'LINK')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(LINK => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  } 
+         
+if ($method eq 'UNLINK')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(UNLINK => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }               
+
+if ($method eq 'PROFIND')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(PROFIND => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }        
+  
+if ($method eq 'COPY')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(COPY => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }        
+
+if ($method eq 'HEAD')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(HEAD => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }        
+
+if ($method eq 'OPTIONS')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(OPTIONS => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }        
+        
+if ($method eq 'CONNECT')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(CONNECT => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }        
+
+if ($method eq 'HEAD')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(HEAD => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }        
+
+if ($method eq 'VIEW')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(VIEW => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }        
+                                        
     
 if ($method eq 'GET')
   { my $req = HTTP::Request->new(GET => $url, $headers);
@@ -195,6 +304,15 @@ if ($method eq 'POST')
    $req->content($post_data);
    $response = $self->browser->request($req);    
   }  
+
+if ($method eq 'DELETE')
+  {     
+   my $post_data = $options{ post_data };           
+   my $req = HTTP::Request->new(DELETE => $url, $headers);
+   $req->content($post_data);
+   $response = $self->browser->request($req);  
+  }        
+
   
 if ($method eq 'POST_MULTIPART')
   {    	   
