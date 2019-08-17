@@ -327,7 +327,7 @@ if ($method eq 'POST_MULTIPART')
 if ($method eq 'POST_FILE')
   { 
 	my $post_data = $options{ post_data };         	    
-	$headers->header('Content_Type' => 'application/atom+xml');
+	$headers->header('Content_Type' => 'application/atom+xml');	
     my $req = HTTP::Request->new(POST => $url, $headers);
     $req->content($post_data);
     #$response = $self->browser->post( $url, Content_Type => 'application/atom+xml', Content => $post_data, $headers);                 
@@ -377,7 +377,7 @@ my $self = shift;
 my $debug = $self->debug;
 print "building header \n" if ($debug);
 my $headers = HTTP::Headers->new;
-			  
+$headers->header('Content-Type' => 'application/x-www-form-urlencoded');	#algunas app requieren este header			  
 #$headers->header('User-Agent' => $user_agent); 
 
 return $headers; 

