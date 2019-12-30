@@ -154,7 +154,7 @@ my @sqlerrors = ( 'error in your SQL syntax',
 	$value =~ s/;/~/g; 
 	
 	open (SALIDA,">>$section-$test.csv") || die "ERROR: No puedo abrir el fichero $test.csv\n";
-	print SALIDA "$req_id;$url;$method;$value;$original_status;$status;$match_status;$error_response;$responselength\n";
+	print SALIDA "$req_id;\"$url\";$method;\"$value\";$original_status;$status;$match_status;$error_response;$responselength\n";
 	close (SALIDA);	
 	
 	
