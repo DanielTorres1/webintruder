@@ -108,12 +108,21 @@ my @sqlerrors = ( 'error in your SQL syntax',
   else
 	{$response = $self->dispatch(url =>$url, method => $method, post_data =>$request_parameters, headers => $headers);}	
 	
+	my $response_header = '';
 	
-	my $response_header =$response->as_string;				
-	$response_header =~ s/\n\n.*//s;	#delete everything after \n\n
+	eval {
+		 $response_header = $response->as_string;				
+		 $response_header =~ s/\n\n.*//s;	#delete everything after \n\n
+
+	};
+	if ($@){ warn $@;} 
+
+
+
 	
 
 	my $status = $response->status_line;
+	print "status $status \n" ; 
 	my $decoded_content = $response->decoded_content;
 	
 	my $final_content = "$response_header\n\n$decoded_content";

@@ -14,7 +14,7 @@ $ENV{PERL_LWP_SSL_VERIFY_HOSTNAME} = 0;
 my $t = localtime;
 my $today = sprintf("%04d-%02d-%02d",$t->year + 1900, $t->mon + 1, $t->mday);
 
-my $debug = 0; 
+my $debug = 1; 
 my $json =0; 
 
 sub banner
@@ -38,6 +38,7 @@ sub usage
   printf "webintruder.pl -f file.xml -t sqli \n"; 
   printf "webintruder.pl -f file.xml -t repeat -p list.txt \n";
   printf "webintruder.pl -f file.xml -t error \n";
+  printf "webintruder.pl -f file.xml -t method \n";  
   printf "webintruder.pl -f file.xml -t nodejs \n";
   printf "webintruder.pl -f file.xml -t session -c \"PHPSESSION=hfs77fhsuf7\" \n";
   printf "webintruder.pl -f file.xml -t session -c \"PHPSESSION=0\" \n";
@@ -283,10 +284,11 @@ for (my $i=0; $i<$request_number;$i++)
 	################ method  #######################   
 	if ($testType eq "method")
 	{	  			
-		@methods = ('PUT','PATCH','LOCK','UNLOCK','LINK','UNLINK','PROFIND','COPY','HEAD','OPTIONS','CONNECT','HEAD','VIEW','GET','POST','DELETE');
+		@methods = ('PUT','PATCH','LOCK','UNLOCK','LINK','UNLINK','PROFIND','COPY','HEAD','CONNECT','VIEW','GET','POST','DELETE'); #,'TRACE' ,'TEST'
+			  	
 		foreach $current_method (@methods) 
 		{ 			
-			print "final_url $final_url \n" if ($debug);			
+			print "current_method $current_method \n" if ($debug);			
 		    $webintruder->request(url => $url, method => $current_method, headers=> $current_headers, original_status => $original_status, original_response64 => $original_response64, test => $testType, section => $section, request_parameters => $request_parameters,req_id => $req_id);
 			$req_id++;																			
 		}
